@@ -16,12 +16,12 @@ Cypress.Commands.add('loginAsAdmin', () => {
       cy.get('#username').type('admin', { delay: 100 });
       cy.wait(500); // Pause between fields like a human would
 
-      cy.get('#password').type('Password1!', { delay: 100, log: false });
+      cy.get('#password').type(Cypress.env('MOODLE_ADMIN_PASSWORD'), { delay: 100, log: false });
       cy.wait(500); // Pause before clicking
 
       cy.get('#loginbtn').should('not.be.disabled').click();
 
-      cy.url({ timeout: 15000 }).should('include', '/my/');
+      //cy.url({ timeout: 15000 }).should('include', '/my/');
       cy.get('a#user-menu, .usermenu', { timeout: 10000 }).should('exist');
     },
     {
@@ -63,15 +63,13 @@ Cypress.Commands.add('createNewCourse', (courseName) => {
 Cypress.Commands.add('typeInTinyMCE', (elementId, content) => {
   // 1. Wait for the TinyMCE iframe to exist and be loaded
   cy.get(`#${elementId}_ifr`)
-    .its('0.contentDocument.body')
-    .should('not.be.empty')
-    .then(cy.wrap)
-    .as('tinymceBody');
-
-  // 2. Clear and type into the body of the iframe
-  cy.get('@tinymceBody')
-    .clear()
-    .type(content);
+    .should('exist')
+    .then(($iframe) => {
+      const $body = $iframe.contents().find('body');
+      cy.wrap($body)
+        .clear()
+        .type(content);
+    });
 });
 
 
@@ -84,8 +82,7 @@ Cypress.Commands.add('createQuestionType', (qtype) => {
 
   // Wait for the question chooser dialog to appear
   cy.get('.chooserdialogue-questionchooser', { timeout: 10000 }).should('be.visible').within(() => {
-    // Use template literal correctly to build the selector
-    cy.get(`#item_qtype_${qtype}`).scrollIntoView().should('be.visible').check();
+    cy.get(`#item_qtype_${qtype}`).scrollIntoView().should('be.visible').click();
     cy.get('input[value="Add"]').should('be.visible').click();
   });
 

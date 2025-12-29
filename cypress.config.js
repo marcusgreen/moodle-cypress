@@ -1,9 +1,12 @@
-module.exports = {
+const { defineConfig } = require("cypress");
+
+module.exports = defineConfig({
   e2e: {
-    experimentalStudio: true,
-    baseUrl: 'http://master.localhost',
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-    },
+    baseUrl: process.env.CYPRESS_BASE_URL || 'http://p53/mdl45',
+    specPattern: 'e2e/**/*.cy.{js,jsx,ts,tsx}',
+    supportFile: 'support/e2e.js',
+    env: {
+      MOODLE_ADMIN_PASSWORD: process.env.CYPRESS_MOODLE_ADMIN_PASSWORD || 'Password1!'
+    }
   },
-};
+});
