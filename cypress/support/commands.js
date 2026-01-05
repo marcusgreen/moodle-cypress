@@ -1,9 +1,16 @@
+// Consolidated Cypress commands for Moodle testing
+// This file contains all custom commands used across the test suite
+
+/**
+ * Log in as Moodle admin using session caching for performance
+ * Uses environment variable for password to avoid hardcoding
+ */
 Cypress.Commands.add('loginAsAdmin', () => {
   cy.session(
     'admin-session',
     () => {
       cy.visit('/login/index.php');
-
+      
       // Wait for page to fully stabilize
       cy.get('form#login', { timeout: 10000 }).should('be.visible');
       cy.wait(1000); // Give JavaScript time to initialize
@@ -21,7 +28,7 @@ Cypress.Commands.add('loginAsAdmin', () => {
 
       cy.get('#loginbtn').should('not.be.disabled').click();
 
-      //cy.url({ timeout: 15000 }).should('include', '/my/');
+      // Verify successful login
       cy.get('a#user-menu, .usermenu', { timeout: 10000 }).should('exist');
     },
     {
@@ -33,7 +40,10 @@ Cypress.Commands.add('loginAsAdmin', () => {
   );
 });
 
-// cypress/support/commands.js - Create a new moodle course
+/**
+ * Create a new Moodle course
+ * @param {string} courseName - The name for the new course
+ */
 Cypress.Commands.add('createNewCourse', (courseName) => {
   // 1. Navigate directly to course management page
   cy.visit('/course/management.php');
@@ -60,21 +70,12 @@ Cypress.Commands.add('createNewCourse', (courseName) => {
   cy.contains(courseName).should('be.visible');
 });
 
-Cypress.Commands.add('typeInTinyMCE', (elementId, content) => {
-  // 1. Wait for the TinyMCE iframe to exist and be loaded
-  cy.get(`#${elementId}_ifr`)
-    .should('exist')
-    .then(($iframe) => {
-      const $body = $iframe.contents().find('body');
-      cy.wrap($body)
-        .clear()
-        .type(content);
-    });
-});
-
-
-// IMPORTANT: Command must be added with Cypress.Commands.add()
-Cypress.Commands.add('createQuestionType', (qtype) => {
+/**
+ * Create a new question of specified type
+ * @param {string} qtype - The question type (e.g., 'gapfill')
+ * @param {string} [questionName] - Optional name for the question
+ */
+Cypress.Commands.add('createQuestionType', (qtype, questionName) => {
   // Click the "Create a new question" button
   cy.contains('button', 'Create a new question', { timeout: 10000 })
     .should('be.visible')
@@ -82,11 +83,38 @@ Cypress.Commands.add('createQuestionType', (qtype) => {
 
   // Wait for the question chooser dialog to appear
   cy.get('.chooserdialogue-questionchooser', { timeout: 10000 }).should('be.visible').within(() => {
-    cy.get(`#item_qtype_${qtype}`).scrollIntoView().should('be.visible').click();
+    // Select the question type
+    cy.get('#item_qtype_' + qtype).scrollIntoView().should('be.visible').check();
     cy.get('input[value="Add"]').should('be.visible').click();
   });
 
   // Wait for the question creation form to load
   cy.url().should('include', '/question/bank/editquestion');
+
+  // Fill in the question name if provided
+  if (questionName) {
+      cy.get('#id_name')
+       .should('be.visible')
+       .clear()
+        .type(questionName);
+  }
 });
 
+/**
+ * Type content into a TinyMCE editor iframe
+ * @param {string} elementId - The ID of the TinyMCE editor element
+ * @param {string} content - The content to type into the editor
+ */
+Cypress.Commands.add('typeInTinyMCE', (elementId, content) => {
+  // 1. Wait for the TinyMCE iframe to exist and be loaded
+  cy.get(`#${elementId}_ifr`)
+    .its('0.contentDocument.body')
+    .should('not.be.empty')
+    .then(cy.wrap)
+    .as('tinymceBody');
+
+  // 2. Clear and type into the body of the iframe
+  cy.get('@tinymceBody')
+    .clear()
+    .type(content);
+});

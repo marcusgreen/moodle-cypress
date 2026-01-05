@@ -13,5 +13,5 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using CommonJS syntax:
-require('../commands')
+// Import consolidated commands from cypress/support/commands.js
+require('../cypress/support/commands')
