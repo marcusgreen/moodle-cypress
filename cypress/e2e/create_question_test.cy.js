@@ -3,10 +3,14 @@ describe('Teacher Question Creation', () => {
     // Login as teacher before each test
     cy.loginAs('teacher');
     
-    // Visit the course page
-    cy.visit('/course/view.php?id=7'); // Assuming course ID 7 is CypressTest
+    // Visit the My Courses page first
+    cy.visit('/my/courses');
+    
+    // Find and click on the CypressTest course
+    cy.contains('CypressTest').click();
     
     // Verify we're on the course page
+    cy.url().should('include', '/course/view.php');
     cy.contains('CypressTest').should('be.visible');
   });
 
