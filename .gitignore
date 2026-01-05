@@ -1,2 +1,25 @@
 # Environment variables
 .env
+
+# Cypress generated files
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+cypress/fixtures/
+
+# Debug and temporary files
+grep
+*.log
+*.tmp
+
+# Node modules
+node_modules/
+
+# IDE files
+.idea/
+.vscode/
+.DS_Store
+
+# Build artifacts
+dist/
+build/
