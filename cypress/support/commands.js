@@ -2,12 +2,51 @@
 // This file contains all custom commands used across the test suite
 
 /**
- * Log in as Moodle admin using session caching for performance
- * Uses environment variable for password to avoid hardcoding
+ * Log in as a specific Moodle user type using session caching for performance
+ * @param {string} userType - The type of user to log in as (admin, teacher, or student)
+ * Uses environment variables for credentials to avoid hardcoding
  */
-Cypress.Commands.add('loginAsAdmin', () => {
+Cypress.Commands.add('loginAs', (userType = 'admin') => {
+  // Validate user type
+  if (!['admin', 'teacher', 'student'].includes(userType)) {
+    throw new Error(`Invalid user type: ${userType}. Must be one of: admin, teacher, student`);
+  }
+
+  const sessionName = `${userType}-session`;
+  
+  // Get credentials based on user type
+  let username, password;
+  switch (userType) {
+    case 'admin':
+      username = 'admin';
+      password = Cypress.env('MOODLE_ADMIN_PASSWORD');
+      if (!password) {
+        throw new Error('MOODLE_ADMIN_PASSWORD environment variable is not defined');
+      }
+      break;
+    case 'teacher':
+      username = Cypress.env('MOODLE_TEACHER_USERNAME');
+      password = Cypress.env('MOODLE_TEACHER_PASSWORD');
+      if (!username || !password) {
+        throw new Error('MOODLE_TEACHER_USERNAME or MOODLE_TEACHER_PASSWORD environment variable is not defined');
+      }
+      break;
+    case 'student':
+      username = Cypress.env('MOODLE_STUDENT_USERNAME');
+      password = Cypress.env('MOODLE_STUDENT_PASSWORD');
+      if (!username || !password) {
+        throw new Error('MOODLE_STUDENT_USERNAME or MOODLE_STUDENT_PASSWORD environment variable is not defined');
+      }
+      break;
+  }
+
+  // Final validation to ensure we have valid credentials
+  if (!username || !password) {
+    throw new Error(`Failed to get credentials for user type: ${userType}`);
+  }
+
   cy.session(
-    'admin-session',
+    sessionName,
     () => {
       cy.visit('/login/index.php');
       
@@ -20,10 +59,10 @@ Cypress.Commands.add('loginAsAdmin', () => {
       cy.get('#password', { timeout: 10000 }).should('not.be.disabled');
 
       // Type with delay to simulate human typing
-      cy.get('#username').type('admin', { delay: 100 });
+      cy.get('#username').type(username, { delay: 100 });
       cy.wait(500); // Pause between fields like a human would
 
-      cy.get('#password').type(Cypress.env('MOODLE_ADMIN_PASSWORD'), { delay: 100, log: false });
+      cy.get('#password').type(password, { delay: 100, log: false });
       cy.wait(500); // Pause before clicking
 
       cy.get('#loginbtn').should('not.be.disabled').click();

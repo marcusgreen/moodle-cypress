@@ -1,6 +1,6 @@
 describe('Moodle Course Management', () => {
     beforeEach(() => {
-      cy.loginAsAdmin(); // Uses the session we created earlier
+      cy.loginAs('admin'); // Uses the session we created earlier
     });
 it('should create a gapfill question type', () => {
   //  cy.createNewCourse('cyQuiz');
