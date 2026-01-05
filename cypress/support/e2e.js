@@ -13,5 +13,5 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import consolidated commands from cypress/support/commands.js
-require('../cypress/support/commands')
+// Import consolidated commands from commands.js
+require('./commands')
