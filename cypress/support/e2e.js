@@ -14,4 +14,4 @@
 // ***********************************************************
 
 // Import consolidated commands from commands.js
-require('./commands')
+import './commands';

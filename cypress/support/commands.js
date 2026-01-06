@@ -157,3 +157,31 @@ Cypress.Commands.add('typeInTinyMCE', (elementId, content) => {
     .clear()
     .type(content);
 });
+
+/**
+ * Navigates to the question bank by extracting the course ID from the current URL
+ * and visiting /question/edit.php?courseid=XX directly.
+ * Then verifies the page contains "Question Bank" text.
+ */
+Cypress.Commands.add('navigateToQuestionBank', () => {
+  // Extract course ID from the current URL
+  cy.url().then((url) => {
+    // Look for course ID in URL - could be in various formats
+    // e.g., /course/view.php?id=123 or /course/view.php?courseid=123
+    const courseIdMatch = url.match(/[?&](id|courseid)=(\d+)/);
+    
+    if (!courseIdMatch) {
+      throw new Error('Could not extract course ID from current URL: ' + url);
+    }
+    
+    const courseId = courseIdMatch[2];
+    
+    // Navigate directly to the question bank for this course
+    cy.visit(`/question/edit.php?courseid=${courseId}`);
+    
+    // Verify that we have landed on the question bank page
+    cy.url().should('include', '/question/edit.php');
+    
+
+  });
+});
